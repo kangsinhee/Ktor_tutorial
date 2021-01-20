@@ -1,16 +1,18 @@
 package sinhee.kang
 
+import com.google.gson.ExclusionStrategy
+import com.google.gson.GsonBuilder
+import com.sun.xml.internal.ws.developer.Serialization
 import io.ktor.application.*
 import io.ktor.features.*
-import com.fasterxml.jackson.databind.*
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer
-import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer
-import io.ktor.jackson.*
+import io.ktor.gson.*
+import io.ktor.http.*
 import io.ktor.routing.*
 import sinhee.kang.config.DatabaseInitializer
-import java.time.LocalDateTime
+import java.text.DateFormat
 import java.time.format.DateTimeFormatter
+import java.time.format.DateTimeFormatterBuilder
+import java.time.temporal.TemporalAccessor
 
 fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
 
@@ -22,18 +24,12 @@ fun Application.module(testing: Boolean = false) {
     install(DefaultHeaders)
     install(CallLogging)
     install(ContentNegotiation) {
-        jackson {
-            enable(SerializationFeature.INDENT_OUTPUT)
-            registerModule(JavaTimeModule().apply {
-                addSerializer(
-                    LocalDateTimeSerializer(
-                    DateTimeFormatter.ofPattern(DATE_TIME_FORMAT))
-                )
-                addDeserializer(
-                    LocalDateTime::class.java,
-                    LocalDateTimeDeserializer(DateTimeFormatter.ofPattern(DATE_TIME_FORMAT))
-                )
-            })
+        register(ContentType.Application.Json, GsonConverter())
+        gson {
+            enableComplexMapKeySerialization()
+            setDateFormat(DATE_TIME_FORMAT)
+            setPrettyPrinting()
+
         }
     }
     install(Routing) {

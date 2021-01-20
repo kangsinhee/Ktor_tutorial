@@ -23,7 +23,6 @@ class TodoService {
         Todo.findById(id)?.run(TodoResponse.Companion::of) ?: throw NotFoundException()
     }
 
-
     suspend fun new(content: String) = query {
         Todo.new { this.content = content }
     }
